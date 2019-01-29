@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, View } from 'react-native';
 import { Container, Header, Content, List, ListItem, Text } from 'native-base';
 import { createStackNavigator, createAppContainer } from 'react-navigation'; 
+import FirebaseAuthenticationScreen from './src/FirebaseAuthenticationScreen';
 
 class HomeScreen extends React.Component {
   render() {
@@ -11,7 +12,7 @@ class HomeScreen extends React.Component {
         <Content>
           <List>
             <ListItem>
-              <Text onPress={() => this.props.navigation.navigate('Details')}>Firebase Authentication</Text>
+              <Text onPress={() => this.props.navigation.navigate('FirebaseAuthentication')}>Firebase Authentication</Text>
             </ListItem>
             <ListItem>
               <Text>xxxx</Text>
@@ -44,6 +45,7 @@ const RootStack = createStackNavigator(
   {
     Home: HomeScreen,
     Details: DetailsScreen,
+    FirebaseAuthentication: FirebaseAuthenticationScreen
   },
   {
     initialRouteName: 'Home',
