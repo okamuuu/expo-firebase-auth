@@ -23,7 +23,13 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.okamuuu.mock-samurai-news-feed",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.1096488952662-qtt0ojj9lkkls0gk9riogdb95ee974st"
+        }
+      }
     }
   }
 }
