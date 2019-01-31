@@ -2,7 +2,10 @@ import React from 'react';
 import { Container, Header, Content, Button, Text } from 'native-base';
 import firebase from 'firebase';
 import Expo, { Google, Facebook } from 'expo';
-import { FACEBOOK_APP_ID, FIREBASE_CONFIG } from '../config'
+import { FACEBOOK_APP_ID, GITHUB, FIREBASE_CONFIG } from '../config'
+import { AuthSession } from 'expo';
+
+const REDIRECT_URL = AuthSession.getRedirectUrl();
 
 firebase.initializeApp(FIREBASE_CONFIG);
 
@@ -35,6 +38,45 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       });
     }
   }
+
+  async handleGithubLogin() {
+
+    const { params } = await AuthSession.startAsync({
+      authUrl: authUrlWithId(GITHUB.CLIENT_ID, ['user']),
+    });
+
+    const { access_token } = await createTokenWithCode(params.code);
+
+    const credential = firebase.auth.GithubAuthProvider.credential(access_token);
+    const user = await firebase.auth().signInAndRetrieveDataWithCredential(credential);
+    console.log(user)
+
+    function authUrlWithId(id, fields) {
+      return (
+        `https://github.com/login/oauth/authorize` +
+        `?client_id=${id}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URL)}` +
+        `&scope=${encodeURIComponent(fields.join(' '))}`
+      );
+    }
+
+    async function createTokenWithCode(code) {
+      const url =
+        `https://github.com/login/oauth/access_token` +
+        `?client_id=${GITHUB.CLIENT_ID}` +
+        `&client_secret=${GITHUB.CLIENT_SECRET}` +
+        `&code=${code}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      return res.json();
+    }
+  }
+
   async handleGoogleLogin() {
     try {
       const result = await Google.logInAsync({
@@ -55,8 +97,12 @@ export default class FirebaseAuthenticationScreen extends React.Component {
         <Content>
           <Text>Firebase Authentication</Text>
           <Button onPress={this.handleFacebookLogin}>
-            <Text>Click Me!</Text>
+            <Text>Facebook</Text>
           </Button>
+          <Button onPress={this.handleGithubLogin}>
+            <Text>Github</Text>
+          </Button>
+ 
         </Content>
       </Container>
     );
