@@ -43,8 +43,10 @@ export default class FirebaseAuthenticationScreen extends React.Component {
     }
   }
 
+  // https://developer.twitter.com/en/docs/twitter-for-websites/log-in-with-twitter/guides/implementing-sign-in-with-twitter
   async handleTwitterLogin() {
 
+    // Step 1: Obtaining a request token
     const oauth = OAuth({
       consumer: {
         key: TWITTER.CLIENT_ID,
@@ -53,10 +55,6 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       signature_method: 'HMAC-SHA1',
       hash_function: (baseString, key) => Base64.stringify(HmacSHA1(baseString, key))
     })
-    const token = {
-      key: TWITTER.TOKEN,
-      secret: TWITTER.TOKEN_SECRET,
-    };
 
     const request_data = {
       url: 'https://api.twitter.com/oauth/request_token',
@@ -66,20 +64,26 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       }
     };
  
-    const oauth_callback = request_data.data.oauth_callback
-    const response = await fetch(request_data.url, {
+    const requestTokenResponse = await fetch(request_data.url, {
       method: request_data.method,
-      // body: JSON.stringify({ oauth_callback }),
-      headers: oauth.toHeader(oauth.authorize(request_data, token)),
-    }).catch(console.error)
-    
-    const { oauth_token, oauth_token_secret, oauth_callback_confirmed } = qs.parse(await response.text())
+      headers: oauth.toHeader(oauth.authorize(request_data, {
+        key: TWITTER.TOKEN,
+        secret: TWITTER.TOKEN_SECRET,
+      }))
+    })
+
+    // oauth_token と oauth_token_secret は access_token への POST 時に使用する
+    const { oauth_token, oauth_token_secret, oauth_callback_confirmed } = qs.parse(await requestTokenResponse.text())
+
+    // Step 2: Redirecting the user
+    // 自力で実装せずに AuthSession module を使う
     const { params }  = await AuthSession.startAsync({
       authUrl: `https://api.twitter.com/oauth/authenticate?oauth_token=${oauth_token}`
     });
 
-    console.log(params)
-
+    // Step 3: Converting the request token to an access token
+    // oauth_verifier を使って access_token を入手する
+    // header に使用する oauth_token と oauth_token_secret は Step 1 で入手したものを使用する
     const formData = new FormData();
     formData.append("oauth_verifier", params.oauth_verifier);
 
@@ -88,6 +92,7 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       method: 'POST',
       data: formData,
     }
+
     const headers = oauth.toHeader(oauth.authorize(requestTokenData, {key: oauth_token, secret: oauth_token_secret}))
     
     const req = new Request(requestTokenData.url, {
@@ -95,9 +100,13 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       body: formData,
       headers
     })
-    const response2 = await fetch(req).catch(console.error)
-    const x = qs.parse(await response2.text())
-    const credential = firebase.auth.TwitterAuthProvider.credential(x.oauth_token, x.oauth_token_secret);
+    const accessTokenResponse = await fetch(req).catch(console.error)
+    const accessTokens = qs.parse(await accessTokenResponse.text())
+    
+    const credential = firebase.auth.TwitterAuthProvider.credential(
+      accessTokens.oauth_token, 
+      accessTokens.oauth_token_secret
+    )
     const user = await firebase.auth().signInAndRetrieveDataWithCredential(credential);
     console.log(user)
   }
