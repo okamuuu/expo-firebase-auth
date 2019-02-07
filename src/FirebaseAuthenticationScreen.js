@@ -15,16 +15,10 @@ const REDIRECT_URL = AuthSession.getRedirectUrl();
 
 export default class FirebaseAuthenticationScreen extends React.Component {
 
-  componentWillMount() {
-    // firebase.auth().onAuthStateChanged((user) => {
-    //   console.log(user)
-    //   if (user) {
-    //     this.setState({ loggedIn: true });
-    //   } else {
-    //     this.setState({ loggedIn: false });
-    //   }
-    // })
+  handleLogout() { 
+    firebase.auth().signOut()
   }
+
   async handleFacebookLogin() {
     const result = await Facebook.logInWithReadPermissionsAsync(
       FACEBOOK_APP_ID,
@@ -184,10 +178,12 @@ export default class FirebaseAuthenticationScreen extends React.Component {
                   <Button onPress={this.handleTwitterLogin}>
                     <Text>Twitter</Text>
                   </Button>
-                   <Button onPress={this.handleGithubLogin}>
+                  <Button onPress={this.handleGithubLogin}>
                     <Text>Github</Text>
                   </Button>
- 
+                  <Button onPress={this.handleLogout}>
+                    <Text>Logout</Text>
+                  </Button>
                 </Content>
               </Container>
           )}}
