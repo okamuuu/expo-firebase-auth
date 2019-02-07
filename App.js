@@ -3,6 +3,7 @@ import { Button, View } from 'react-native';
 import { Container, Header, Content, List, ListItem, Text } from 'native-base';
 import { createStackNavigator, createAppContainer } from 'react-navigation'; 
 import FirebaseAuthenticationScreen from './src/FirebaseAuthenticationScreen';
+import Counter from './src/Counter';
 
 class HomeScreen extends React.Component {
   render() {
@@ -15,7 +16,7 @@ class HomeScreen extends React.Component {
               <Text onPress={() => this.props.navigation.navigate('FirebaseAuthentication')}>Firebase Authentication</Text>
             </ListItem>
             <ListItem>
-              <Text>xxxx</Text>
+              <Text onPress={() => this.props.navigation.navigate('Counter')}>Counter</Text>
             </ListItem>
             <ListItem>
               <Text>xxxx</Text>
@@ -45,7 +46,8 @@ const RootStack = createStackNavigator(
   {
     Home: HomeScreen,
     Details: DetailsScreen,
-    FirebaseAuthentication: FirebaseAuthenticationScreen
+    FirebaseAuthentication: FirebaseAuthenticationScreen,
+    Counter,
   },
   {
     initialRouteName: 'Home',
