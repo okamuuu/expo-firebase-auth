@@ -11,7 +11,6 @@ class UserContainer extends Container {
   constructor(props) {
     super(props);
     firebase.auth().onAuthStateChanged((user) => {
-      console.log(user.toJSON())
       if (user) {
         this.setState({ user: user.toJSON() });
       } else {

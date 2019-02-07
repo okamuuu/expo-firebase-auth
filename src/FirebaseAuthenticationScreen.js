@@ -1,6 +1,7 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
+import { Container, Header, Content, Button, Text, Thumbnail } from 'native-base';
 import { Provider, Subscribe } from 'unstated'
-import { Container, Header, Content, Button, Text } from 'native-base';
 import firebase from './firebase';
 import Expo, { AuthSession, Google, Facebook } from 'expo';
 import qs from 'qs'
@@ -166,27 +167,50 @@ export default class FirebaseAuthenticationScreen extends React.Component {
     return (
       <Provider>
         <Subscribe to={[UserContainer]}>
-          {userContainer => (
-          <Container>
-            <Header />
-            <Content>
-              <Text>{ userContainer.state.user && userContainer.state.user.displayName }</Text>
-              <Text>Firebase Authentication</Text>
-              <Button onPress={this.handleFacebookLogin}>
-                <Text>Facebook</Text>
-              </Button>
-              <Button onPress={this.handleTwitterLogin}>
-                <Text>Twitter</Text>
-              </Button>
-               <Button onPress={this.handleGithubLogin}>
-                <Text>Github</Text>
-              </Button>
+          {userContainer => {
+            const user = userContainer.state.user || {}
+            return (
+              <Container>
+                <Header />
+                <Content style={styles.content}>
+                  <Text>{ user.displayName }</Text>
+                  <Thumbnail large source={{uri: user.photoURL}} />
+                </Content>
+                <Content style={styles.content}>
+                  <Text>Firebase Authentication</Text>
+                  <Button onPress={this.handleFacebookLogin}>
+                    <Text>Facebook</Text>
+                  </Button>
+                  <Button onPress={this.handleTwitterLogin}>
+                    <Text>Twitter</Text>
+                  </Button>
+                   <Button onPress={this.handleGithubLogin}>
+                    <Text>Github</Text>
+                  </Button>
  
-            </Content>
-          </Container>
-          )}
+                </Content>
+              </Container>
+          )}}
         </Subscribe>
       </Provider>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    height: "100%",
+  },
+  content: {
+    padding: 30,
+  },
+  header: {
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  footer: {
+    alignItems: "center",
+    justifyContent: "center"
+  }
+});
