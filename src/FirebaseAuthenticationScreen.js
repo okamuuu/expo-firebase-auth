@@ -1,28 +1,28 @@
 import React from 'react';
+import { Provider, Subscribe } from 'unstated'
 import { Container, Header, Content, Button, Text } from 'native-base';
-import firebase from 'firebase';
+import firebase from './firebase';
 import Expo, { AuthSession, Google, Facebook } from 'expo';
 import qs from 'qs'
 import OAuth from 'oauth-1.0a'
 import HmacSHA1 from 'crypto-js/hmac-sha1';
 import Base64 from 'crypto-js/enc-base64';
-
-import { FACEBOOK_APP_ID, GITHUB, TWITTER, FIREBASE_CONFIG } from '../config'
+import UserContainer from './containers/User'
+import { FACEBOOK_APP_ID, GITHUB, TWITTER } from '../config'
 
 const REDIRECT_URL = AuthSession.getRedirectUrl();
-
-firebase.initializeApp(FIREBASE_CONFIG);
 
 export default class FirebaseAuthenticationScreen extends React.Component {
 
   componentWillMount() {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        this.setState({ loggedIn: true });
-      } else {
-        this.setState({ loggedIn: false });
-      }
-    })
+    // firebase.auth().onAuthStateChanged((user) => {
+    //   console.log(user)
+    //   if (user) {
+    //     this.setState({ loggedIn: true });
+    //   } else {
+    //     this.setState({ loggedIn: false });
+    //   }
+    // })
   }
   async handleFacebookLogin() {
     const result = await Facebook.logInWithReadPermissionsAsync(
@@ -164,22 +164,29 @@ export default class FirebaseAuthenticationScreen extends React.Component {
 
   render() {
     return (
-      <Container>
-        <Header />
-        <Content>
-          <Text>Firebase Authentication</Text>
-          <Button onPress={this.handleFacebookLogin}>
-            <Text>Facebook</Text>
-          </Button>
-          <Button onPress={this.handleTwitterLogin}>
-            <Text>Twitter</Text>
-          </Button>
-           <Button onPress={this.handleGithubLogin}>
-            <Text>Github</Text>
-          </Button>
+      <Provider>
+        <Subscribe to={[UserContainer]}>
+          {userContainer => (
+          <Container>
+            <Header />
+            <Content>
+              <Text>{ userContainer.state.user && userContainer.state.user.displayName }</Text>
+              <Text>Firebase Authentication</Text>
+              <Button onPress={this.handleFacebookLogin}>
+                <Text>Facebook</Text>
+              </Button>
+              <Button onPress={this.handleTwitterLogin}>
+                <Text>Twitter</Text>
+              </Button>
+               <Button onPress={this.handleGithubLogin}>
+                <Text>Github</Text>
+              </Button>
  
-        </Content>
-      </Container>
+            </Content>
+          </Container>
+          )}
+        </Subscribe>
+      </Provider>
     );
   }
 }
