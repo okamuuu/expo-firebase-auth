@@ -9,7 +9,7 @@ import OAuth from 'oauth-1.0a'
 import HmacSHA1 from 'crypto-js/hmac-sha1';
 import Base64 from 'crypto-js/enc-base64';
 import UserContainer from './containers/User'
-import { FACEBOOK_APP_ID, GITHUB, TWITTER } from '../config'
+import { FACEBOOK_APP_ID, GOOGLE, GITHUB, TWITTER } from '../config'
 
 const REDIRECT_URL = AuthSession.getRedirectUrl();
 
@@ -108,11 +108,15 @@ export default class FirebaseAuthenticationScreen extends React.Component {
 
   async handleGithubLogin() {
 
+    console.log("handleGithubLogin")
+    console.log(REDIRECT_URL)
     const { params } = await AuthSession.startAsync({
       authUrl: authUrlWithId(GITHUB.CLIENT_ID, ['user']),
     });
 
     const { access_token } = await createTokenWithCode(params.code);
+
+    console.log(access_token)
 
     const credential = firebase.auth.GithubAuthProvider.credential(access_token);
     const user = await firebase.auth().signInAndRetrieveDataWithCredential(credential);
@@ -144,17 +148,38 @@ export default class FirebaseAuthenticationScreen extends React.Component {
     }
   }
 
+  // https://developers.google.com/identity/protocols/OAuth2WebServer
   async handleGoogleLogin() {
-    try {
-      const result = await Google.logInAsync({
-        clientId: "",
-      });
-      console.log(result)
-    } catch (err) {
-      console.log("Googleトークン取得エラー");
-      alert("ログインに失敗しました\n\n" + err.message)
-      return;
-    }
+
+    // Redirect to Google's OAuth 2.0 server
+    const result = await AuthSession.startAsync({
+      authUrl:
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `&client_id=${GOOGLE.CLIENT_ID}` +
+        `&redirect_uri=${REDIRECT_URL}` +
+        `&response_type=code` +
+        `&access_type=offline` +
+        `&scope=profile`,
+    });
+
+    // Exchange authorization code for refresh and access tokens
+    console.log(result)
+    
+    const url = `https://www.googleapis.com/oauth2/v4/token`
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        code: result.params.code,
+        client_id: GOOGLE.CLIENT_ID,
+        client_secret: GOOGLE.CLIENT_SECRET,
+        redirect_uri: REDIRECT_URL,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    const { id_token } = await res.json()
+    var credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+    firebase.auth().signInAndRetrieveDataWithCredential(credential).catch(console.error)
   }
 
   render() {
@@ -174,6 +199,9 @@ export default class FirebaseAuthenticationScreen extends React.Component {
                   <Text>Firebase Authentication</Text>
                   <Button onPress={this.handleFacebookLogin}>
                     <Text>Facebook</Text>
+                  </Button>
+                  <Button onPress={this.handleGoogleLogin}>
+                    <Text>Google</Text>
                   </Button>
                   <Button onPress={this.handleTwitterLogin}>
                     <Text>Twitter</Text>
