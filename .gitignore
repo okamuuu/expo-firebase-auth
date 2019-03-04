@@ -1,4 +1,4 @@
-node_modules/**/*
+node_modules
 .expo/*
 npm-debug.*
 *.jks
@@ -6,3 +6,6 @@ npm-debug.*
 *.key
 *.mobileprovision
 config.js
+.firebaserc
+firebase-debug.log
+firebase.json
