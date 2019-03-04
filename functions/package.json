@@ -14,10 +14,13 @@
   },
   "dependencies": {
     "crypto": "^1.0.1",
+    "crypto-js": "^3.1.9-1",
     "firebase-admin": "~6.0.0",
     "firebase-functions": "^2.1.0",
+    "form-data": "^2.3.3",
     "node-fetch": "^2.3.0",
-    "oauth-1.0a": "^2.2.5"
+    "oauth-1.0a": "^2.2.5",
+    "qs": "^6.6.0"
   },
   "devDependencies": {
     "eslint": "^4.12.0",
