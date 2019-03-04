@@ -1,71 +1,48 @@
-var createError = require('http-errors');
-var express = require('express');
-var session = require('express-session');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var passport = require('passport');
-var TwitterStrategy = require('passport-twitter').Strategy;
+const createError = require('http-errors')
+const express = require('express')
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
 
-var config = require('./config')
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const crypto = require('crypto');
+const OAuth = require('oauth-1.0a');
+const port = process.env.PORT || 3000
 
-var app = express();
+const config = require('./config.js')
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+const app = express();
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
-  secret: 'secret-key',
-  resave: true,
-  saveUninitialized: true
-}));
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-passport.use(new TwitterStrategy({
-    consumerKey: config.CLIENT_ID,
-    consumerSecret: config.CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/twitter/callback"
-  },
-  function(token, tokenSecret, profile, done) {
-    // token, tokenSecret があれば Firebase にログインすることができるはず？
-    console.log(token, tokenSecret)
-    return done(null, profile);
+app.get('/api/ping', (req, res) => {
+    res.json({ ping: 'pong' }); 
+});
+
+app.post('/auth/github', async (req, res) => {
+
+  // TODO: validate code
+  const code = req.body.code
+
+  const result = await createTokenWithCode(code);
+
+  return res.json(result)
+
+  async function createTokenWithCode(code) {
+    const url =
+      `https://github.com/login/oauth/access_token` +
+      `?client_id=${config.GITHUB.CLIENT_ID}` +
+      `&client_secret=${config.GITHUB.CLIENT_SECRET}` +
+      `&code=${code}`;
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+    return res.json(); // return Promise Object
   }
-));
-// セッションに保存
-passport.serializeUser(function(user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function(user, done) {
-  done(null, user);
-});
-
-app.use('/', indexRouter);
-app.use('/user', usersRouter);
-app.get('/auth/twitter', passport.authenticate('twitter'));
-app.get('/auth/twitter/callback', 
-  passport.authenticate('twitter', { failureRedirect: '/?auth_failed' }), 
-  function (req, res) {
-    res.redirect('/user');
-  });
-
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-app.use(function(err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
 });
 
 if (!module.parent) {

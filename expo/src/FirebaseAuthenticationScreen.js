@@ -33,6 +33,7 @@ export default class FirebaseAuthenticationScreen extends React.Component {
 
       // Sign in with credential from the Facebook user.
       firebase.auth().signInAndRetrieveDataWithCredential(credential).catch((error) => {
+        console.log(error)
         // Handle Errors here.
       });
     }
@@ -114,9 +115,9 @@ export default class FirebaseAuthenticationScreen extends React.Component {
       authUrl: authUrlWithId(GITHUB.CLIENT_ID, ['user']),
     });
 
-    const { access_token } = await createTokenWithCode(params.code);
+    console.log(params)
 
-    console.log(access_token)
+    const { access_token } = await createTokenWithCode(params.code);
 
     const credential = firebase.auth.GithubAuthProvider.credential(access_token);
     const user = await firebase.auth().signInAndRetrieveDataWithCredential(credential);
@@ -130,22 +131,35 @@ export default class FirebaseAuthenticationScreen extends React.Component {
         `&scope=${encodeURIComponent(fields.join(' '))}`
       );
     }
-
+    
     async function createTokenWithCode(code) {
-      const url =
-        `https://github.com/login/oauth/access_token` +
-        `?client_id=${GITHUB.CLIENT_ID}` +
-        `&client_secret=${GITHUB.CLIENT_SECRET}` +
-        `&code=${code}`;
+      const url = "http://localhost:3000/auth/github/"
       const res = await fetch(url, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({code})
       });
       return res.json();
     }
+
+    // async function createTokenWithCode(code) {
+    //   const url =
+    //     `https://github.com/login/oauth/access_token` +
+    //     `?client_id=${GITHUB.CLIENT_ID}` +
+    //     `&client_secret=${GITHUB.CLIENT_SECRET}` +
+    //     `&code=${code}`;
+    //   const res = await fetch(url, {
+    //     method: 'POST',
+    //     headers: {
+    //       Accept: 'application/json',
+    //       'Content-Type': 'application/json',
+    //     },
+    //   });
+    //   return res.json();
+    // }
   }
 
   // https://developers.google.com/identity/protocols/OAuth2WebServer

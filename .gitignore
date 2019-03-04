@@ -1,11 +1,12 @@
 node_modules
-.expo/*
+.expo
 npm-debug.*
 *.jks
 *.p12
 *.key
 *.mobileprovision
-config.js
+expo/config.js
+functions/config.js
 .firebaserc
 firebase-debug.log
 firebase.json
