@@ -1,0 +1,24 @@
+module.eposrts = {
+  FACEBOOK_APP_ID: "",
+  GOOGLE: {
+    CLIENT_ID: "",
+    CLIENT_SECRET: ""
+  },
+  GITHUB: {
+    CLIENT_ID: "",
+    CLIENT_SECRET: "",
+  },
+  IREBASE_CONFIG: {
+    apiKey: "",
+    databaseURL: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: ""
+  },
+  TWITTER: {
+    CLIENT_ID: "",
+    CLIENT_SECRET: "",
+    TOKEN: "",
+    TOKEN_SECRET: "",
+  }
+}

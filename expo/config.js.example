@@ -7,7 +7,7 @@ export const GOOGLE = {
 }
 
 export const GITHUB = {
-  CLIENT_ID: ""
+  CLIENT_ID: "",
   CLIENT_SECRET: ""
 }
 
